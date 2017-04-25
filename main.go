@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 )
 
@@ -15,11 +16,42 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", indexHandler)
 
-	server := http.Server{
+	// create server
+	srv := &IndexServer{
 		Addr:    ":3000",
 		Handler: mux,
 	}
-	server.ListenAndServe()
+
+	err := srv.Open()
+	if err != nil {
+		srv.Close()
+	}
+	c := make(chan bool, 1)
+	<-c
+	srv.Close()
+}
+
+type IndexServer struct {
+	ln      net.Listener
+	Addr    string
+	Handler http.Handler
+}
+
+func (s *IndexServer) Open() error {
+	ln, err := net.Listen("tcp", ":3000")
+	s.ln = ln
+	if err != nil {
+		return err
+	}
+	go func() { http.Serve(s.ln, s.Handler) }()
+	return nil
+}
+
+func (s *IndexServer) Close() error {
+	if s.ln != nil {
+		s.ln.Close()
+	}
+	return nil
 }
 
 // we can have more data inside, funcs, db handlers, encoders, ...
