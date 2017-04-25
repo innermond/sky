@@ -14,7 +14,12 @@ func main() {
 	// create a tcp server
 	mux := http.NewServeMux()
 	mux.Handle("/", indexHandler)
-	http.ListenAndServe(":3000", mux)
+
+	server := http.Server{
+		Addr:    ":3000",
+		Handler: mux,
+	}
+	server.ListenAndServe()
 }
 
 // we can have more data inside, funcs, db handlers, encoders, ...
