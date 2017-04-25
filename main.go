@@ -12,8 +12,9 @@ func main() {
 	// create a handler
 	indexHandler := IndexHandler{"earth is flat"}
 	// create a tcp server
-	http.Handle("/", indexHandler)
-	http.ListenAndServe(":3000", nil)
+	mux := http.NewServeMux()
+	mux.Handle("/", indexHandler)
+	http.ListenAndServe(":3000", mux)
 }
 
 // we can have more data inside, funcs, db handlers, encoders, ...
