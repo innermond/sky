@@ -8,12 +8,16 @@ import (
 // we are on earth
 
 func main() {
+	// create a handler
+	indexHandler := IndexHandler{}
 	// create a tcp server
-	http.HandleFunc("/", IndexFn)
+	http.Handle("/", indexHandler)
 	http.ListenAndServe(":3000", nil)
 }
 
-func IndexFn(w http.ResponseWriter, r *http.Request) {
+type IndexHandler struct{}
+
+func (hnd IndexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// echo back url parameters
 	s := fmt.Sprintf("%v", r.URL.Query())
 	if r.Method == "POST" {
