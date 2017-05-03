@@ -7,5 +7,5 @@ type Person struct {
 }
 
 type PersonService interface {
-	Get(PersonID) Person
+	Get(PersonID) (Person, error)
 }

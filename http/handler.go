@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/innermond/sky/sky"
@@ -35,6 +36,7 @@ func (h *AllServicesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // we can have more data inside, funcs, db handlers, encoders, ...
 type PersonHandler struct {
 	*httprouter.Router
+	PersonService sky.PersonService
 }
 
 func NewPersonHandler() *PersonHandler {
@@ -48,8 +50,16 @@ func NewPersonHandler() *PersonHandler {
 }
 
 func (h PersonHandler) handleGetPerson(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	pid := ps.ByName("id")
+	pid, err := strconv.Atoi(ps.ByName("id"))
 	log.Printf("get person %s", pid)
+	p, err := h.PersonService.Get(sky.PersonID(pid))
+	if err != nil {
+		Error(w, err, http.StatusInternalServerError)
+	} else if p == nil {
+		NotFound(w)
+	} else {
+		encodeJson(w, &getPersonResponse{Person: p})
+	}
 	// echo back url parameters
 	s := fmt.Sprintf("%v %s", r.URL.Query(), pid)
 	w.Write([]byte(s))
