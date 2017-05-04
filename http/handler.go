@@ -39,9 +39,10 @@ type PersonHandler struct {
 	PersonService sky.PersonService
 }
 
-func NewPersonHandler() *PersonHandler {
+func NewPersonHandler(s sky.PersonService) *PersonHandler {
 	h := &PersonHandler{
-		Router: httprouter.New(),
+		Router:        httprouter.New(),
+		PersonService: s,
 	}
 
 	h.GET("/api/persons/:id", h.handleGetPerson)
@@ -58,7 +59,7 @@ func (h PersonHandler) handleGetPerson(w http.ResponseWriter, r *http.Request, p
 	} else if p == nil {
 		NotFound(w)
 	} else {
-		encodeJson(w, &getPersonResponse{Person: p})
+		encodeJson(w, &getPersonResponse{Person: *p})
 	}
 	// echo back url parameters
 	s := fmt.Sprintf("%v %s", r.URL.Query(), pid)
