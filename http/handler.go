@@ -4,11 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
-
-	"github.com/innermond/sky/sky"
-	"github.com/julienschmidt/httprouter"
 )
 
 type AllServicesHandler struct {
@@ -31,43 +27,4 @@ func (h *AllServicesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		NotFound(w)
 		return
 	}
-}
-
-// we can have more data inside, funcs, db handlers, encoders, ...
-type PersonHandler struct {
-	*httprouter.Router
-	PersonService sky.PersonService
-}
-
-func NewPersonHandler(s sky.PersonService) *PersonHandler {
-	h := &PersonHandler{
-		Router:        httprouter.New(),
-		PersonService: s,
-	}
-
-	h.GET("/api/persons/:id", h.handleGetPerson)
-
-	return h
-}
-
-func (h PersonHandler) handleGetPerson(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	pid, err := strconv.Atoi(ps.ByName("id"))
-	log.Printf("get person %s", pid)
-	p, err := h.PersonService.Get(sky.PersonID(pid))
-	if err != nil {
-		Error(w, err, http.StatusInternalServerError)
-	} else if p == nil {
-		NotFound(w)
-	} else {
-		encodeJson(w, &getPersonResponse{Person: *p})
-	}
-	// echo back url parameters
-	s := fmt.Sprintf("%v %s", r.URL.Query(), pid)
-	w.Write([]byte(s))
-}
-
-type getPersonResponse struct {
-	Person sky.Person `json:"person,omitempty"`
-
-	errorResponse
 }

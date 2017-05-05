@@ -9,3 +9,6 @@ type Person struct {
 type PersonService interface {
 	Get(PersonID) (*Person, error)
 }
+
+type Session interface {
+}

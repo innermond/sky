@@ -26,8 +26,10 @@ func main() {
 		panic(err)
 	}
 
+	// session
+	s := mysql.NewSession(db)
 	// services
-	personService := &mysql.PersonService{db}
+	personService := mysql.NewPersonService(s)
 	all := &http.AllServicesHandler{
 		PersonHandler: http.NewPersonHandler(personService),
 	}

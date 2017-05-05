@@ -7,13 +7,19 @@ import (
 	"github.com/innermond/sky/sky"
 )
 
-var _ sky.PersonService = &PersonService{}
+var (
+	_ sky.PersonService = &PersonService{}
+)
 
 type PersonService struct {
-	DB *sql.DB
+	session *Session
 }
 
-func (me *PersonService) Get(pid sky.PersonID) (*sky.Person, error) {
+func NewPersonService(s *Session) *PersonService {
+	return &PersonService{session: s}
+}
+
+func (s *PersonService) Get(pid sky.PersonID) (*sky.Person, error) {
 	id := int(pid)
 	q := `select 
 	id, 
@@ -28,7 +34,7 @@ func (me *PersonService) Get(pid sky.PersonID) (*sky.Person, error) {
 	where id=?`
 
 	var p sky.Person
-	err := me.DB.QueryRow(q, id).Scan(&p.ID, &p.Longname)
+	err := s.session.db.QueryRow(q, id).Scan(&p.ID, &p.Longname)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
