@@ -8,6 +8,7 @@ type Person struct {
 
 type PersonService interface {
 	Get(PersonID) (*Person, error)
+	Create(Person) (PersonID, error)
 }
 
 type Session interface {
