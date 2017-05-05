@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/innermond/sky/http"
+	"github.com/innermond/sky/mysql"
 )
 
 // we are on earth
@@ -14,8 +17,21 @@ func main() {
 	log.SetOutput(os.Stderr)
 	log.SetFlags(log.LstdFlags)
 
+	dns := "root:M0b1d1c3@tcp(localhost:3306)/printoo"
+	db, err := sql.Open("mysql", dns)
+	if err != nil {
+		panic(err)
+	}
+	if err = db.Ping(); err != nil {
+		panic(err)
+	}
+
+	// session
+	s := mysql.NewSession(db)
+	// services
+	personService := mysql.NewPersonService(s)
 	all := &http.AllServicesHandler{
-		PersonHandler: http.NewPersonHandler(),
+		PersonHandler: http.NewPersonHandler(personService),
 	}
 	// create server
 	srv := &http.IndexServer{
@@ -23,7 +39,7 @@ func main() {
 		Handler: all,
 	}
 
-	err := srv.Open()
+	err = srv.Open()
 	if err != nil {
 		srv.Close()
 	}
