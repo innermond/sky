@@ -8,7 +8,9 @@ type Person struct {
 
 type PersonService interface {
 	Get(PersonID) (*Person, error)
+	Delete(PersonID) error
 	Create(Person) (PersonID, error)
+	Modify(Person) error
 }
 
 type Session interface {

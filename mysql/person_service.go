@@ -53,7 +53,6 @@ func (s *PersonService) Create(p sky.Person) (sky.PersonID, error) {
 	}
 	log.Println(p)
 	res, err := stm.Exec(p.Longname)
-	log.Println(err)
 	if err != nil {
 		if driverErr, ok := err.(*mysql.MySQLError); ok {
 			if driverErr.Number == 1364 {
@@ -67,4 +66,46 @@ func (s *PersonService) Create(p sky.Person) (sky.PersonID, error) {
 		return 0, err
 	}
 	return sky.PersonID(lid), nil
+}
+func (s *PersonService) Modify(p sky.Person) error {
+	q := `update persons set longname=? where id=? limit 1`
+	stm, err := s.session.db.Prepare(q)
+	if err != nil {
+		return err
+	}
+	log.Println(p)
+	res, err := stm.Exec(p.Longname, p.ID)
+	if err != nil {
+		return err
+	}
+	aff, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	log.Println(aff)
+	if aff == 0 {
+		return sky.ErrNoneAffected
+	}
+	return nil
+}
+
+func (s *PersonService) Delete(pid sky.PersonID) error {
+	q := `delete from persons where id = ? limit 1`
+	stm, err := s.session.db.Prepare(q)
+	if err != nil {
+		return err
+	}
+	res, err := stm.Exec(pid)
+	if err != nil {
+		return err
+	}
+	aff, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	log.Println(aff)
+	if aff == 0 {
+		return sky.ErrNoneAffected
+	}
+	return nil
 }
