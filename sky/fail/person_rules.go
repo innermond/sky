@@ -1,6 +1,9 @@
 package fail
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/innermond/sky/sky"
 )
 
@@ -10,7 +13,8 @@ type PersonRules struct {
 }
 
 func (r *PersonRules) LongnameOk() *Mistake {
-	v := r.Longname
+	//TODO Move sanitising outside
+	v := strings.TrimSpace(r.Longname)
 	// required
 	if v == "" {
 		return NewMistake("required")
@@ -19,6 +23,11 @@ func (r *PersonRules) LongnameOk() *Mistake {
 	l := len(v)
 	if l < 4 || l > 10 {
 		return NewMistake("unexpected length")
+	}
+	// utf-8 letters
+	fit, err := regexp.MatchString("[\\p{L}\\-]+", v)
+	if !fit || err != nil {
+		return NewMistake("unacceptable characters")
 	}
 	return nil
 }
