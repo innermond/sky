@@ -78,26 +78,30 @@ func TestGetSinglePerson(t *testing.T) {
 	}
 }
 
-/*func TestPostSinglePerson(t *testing.T) {
+func TestPostSinglePerson(t *testing.T) {
 	uses := []struct {
-		longname string
+		data     string
+		expected int
 	}{
-		// nonexistent
-		{"gabi1"},
+		// longname is not valid
+		{`{"person":{"id":1,"longname":"ga"}}`, 412},
+		{`{"person":{"id":1,"longname":"ga is more than 10 characters length"}}`, 412},
 	}
 	srv := minor()
 	defer srv.Close()
 	urlStr := srv.URL + "/api/persons"
 	for _, uc := range uses {
-		t.Run(uc.longname, func(t *testing.T) {
-			res, err := http.Get(urlStr + uc.id)
+		t.Run(uc.data, func(t *testing.T) {
+			req, err := http.NewRequest("PATCH", urlStr, bytes.NewBuffer([]byte(uc.data)))
 			fatalif(err, t)
-			if resStatusCode != uc.expected {
+			res, err := http.DefaultClient.Do(req)
+			fatalif(err, t)
+			if res.StatusCode != uc.expected {
 				t.Errorf("status code expected %d got %d", uc.expected, res.StatusCode)
 			}
 		})
 	}
-}*/
+}
 
 func TestDeleteSinglePerson(t *testing.T) {
 	uses := []struct {
@@ -124,13 +128,15 @@ func TestDeleteSinglePerson(t *testing.T) {
 		})
 	}
 }
+
 func TestPatchSinglePerson(t *testing.T) {
 	uses := []struct {
 		data     string
 		expected int
 	}{
-		// updating return 200
-		{`{"person":{"id":1,"longname":"gabitest"}}`, 200},
+		// longname is not valid
+		{`{"person":{"id":1,"longname":"ga"}}`, 412},
+		{`{"person":{"id":1,"longname":"ga is more than 10 characters length"}}`, 412},
 	}
 	srv := minor()
 	defer srv.Close()

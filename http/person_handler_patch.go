@@ -2,10 +2,10 @@ package http
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/innermond/sky/sky"
+	"github.com/innermond/sky/sky/fail"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -22,15 +22,17 @@ func (h PersonHandler) handlePatchPerson(w http.ResponseWriter, r *http.Request,
 
 	p := req.Person
 
-	switch err = h.PersonService.Modify(p); err {
-	case nil:
+	err = h.PersonService.Modify(p)
+	// Validation
+	if err == nil {
 		encodeJson(w, &patchPersonResponse{})
-	case sky.ErrPersonValid:
-		log.Println(err)
-		Error(w, sky.ErrPersonValid, http.StatusBadRequest)
-	default:
-		Error(w, err, http.StatusInternalServerError)
+		return
 	}
+	if verr, ok := err.(*fail.Mistake); ok {
+		Error(w, verr, http.StatusPreconditionFailed)
+		return
+	}
+	Error(w, err, http.StatusInternalServerError)
 }
 
 type patchPersonRequest struct {

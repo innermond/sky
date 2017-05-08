@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/innermond/sky/sky"
+	"github.com/innermond/sky/sky/fail"
 )
 
 var (
@@ -68,6 +69,10 @@ func (s *PersonService) Create(p sky.Person) (sky.PersonID, error) {
 	return sky.PersonID(lid), nil
 }
 func (s *PersonService) Modify(p sky.Person) error {
+	r := &fail.PersonRules{p}
+	if err := r.LongnameOk(); err != nil {
+		return err
+	}
 	q := `update persons set longname=? where id=? limit 1`
 	stm, err := s.session.db.Prepare(q)
 	if err != nil {
