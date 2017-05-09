@@ -21,6 +21,7 @@ func TestPersonRulesFailure(t *testing.T) {
 		able`}, true},
 		{sky.Person{Longname: "Break\nable"}, true},
 		{sky.Person{Longname: "Break\table"}, true},
+		{sky.Person{Longname: "Break able!!"}, true},
 	}
 	for _, uc := range uses {
 		t.Run(uc.data.Longname, func(t *testing.T) {

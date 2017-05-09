@@ -3,6 +3,7 @@ package fail
 import (
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/innermond/sky/sky"
 )
@@ -12,9 +13,22 @@ type PersonRules struct {
 	mistakes Mistakes
 }
 
+func NewPersonRules(p sky.Person) *PersonRules {
+	return &PersonRules{p, Mistakes{}}
+}
+
 func (r *PersonRules) LongnameOk() *Mistake {
 	//TODO Move sanitising outside
 	v := strings.TrimSpace(r.Longname)
+	// only printables
+	printable := true
+	for _, ch := range v {
+		printable = unicode.IsPrint(ch)
+		if !printable {
+			return NewMistake("unprintable characters")
+		}
+	}
+
 	// required
 	if v == "" {
 		return NewMistake("required")
