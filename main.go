@@ -33,6 +33,7 @@ func main() {
 	all := &http.AllServicesHandler{
 		PersonHandler: http.NewPersonHandler(personService),
 	}
+	// here wrap all handler with middlewares
 	// create server
 	srv := &http.IndexServer{
 		Addr:    ":3000",

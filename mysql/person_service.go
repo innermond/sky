@@ -69,7 +69,7 @@ func (s *PersonService) Create(p sky.Person) (sky.PersonID, error) {
 	return sky.PersonID(lid), nil
 }
 func (s *PersonService) Modify(p sky.Person) error {
-	r := &fail.PersonRules{p}
+	r := fail.NewPersonRules(p)
 	if err := r.LongnameOk(); err != nil {
 		return err
 	}
