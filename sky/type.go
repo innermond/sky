@@ -13,6 +13,15 @@ type PersonService interface {
 	Modify(Person) error
 }
 
+type TokenService interface {
+	Create(Credentials) (string, error)
+}
+type Credentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	ApiKey   string `json:"apikey"`
+}
+
 type Session interface {
 }
 

@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 type AllServicesHandler struct {
 	Auth          sky.Authenticator
 	PersonHandler *PersonHandler
+	TokenHandler  *TokenHandler
 }
 
 func (h *AllServicesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -25,27 +27,33 @@ func (h *AllServicesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	resource := parts[2]
 
 	// check presence auth token for entire api's endpoints excepts "authenticate"
-	tokenName := "Autorization"
+	tokenName := "Authorization"
 	tokenstr := r.Header.Get(tokenName)
-	if resource != "authenticate" && "" == tokenstr {
-		NotAuthenticated(w)
-		return
-	}
-	// try to parse a jwt token
-	tokenstr = strings.TrimSpace(tokenstr)
-	if !strings.HasPrefix(tokenstr, "Bearer") {
-		NotAuthenticated(w)
-		return
-	}
-	tk := tokenstr[7:]
-	err := h.Auth.Authenticate(tk)
-	if err != nil {
-		NotAuthenticated(w)
-		return
+	log.Println(parts, resource, tokenstr)
+	if resource != "tokens" {
+		if "" == tokenstr {
+			NotAuthenticated(w)
+			return
+		}
+		// try to parse a jwt token
+		tokenstr = strings.TrimSpace(tokenstr)
+		if !strings.HasPrefix(tokenstr, "Bearer") {
+			NotAuthenticated(w)
+			return
+		}
+		tk := tokenstr[7:]
+		err := h.Auth.Authenticate(tk)
+		log.Println(err)
+		if err != nil {
+			NotAuthenticated(w)
+			return
+		}
 	}
 	switch resource {
 	case "persons":
 		h.PersonHandler.ServeHTTP(w, r)
+	case "tokens":
+		h.TokenHandler.ServeHTTP(w, r)
 	default:
 		NotFound(w)
 		return

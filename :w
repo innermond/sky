@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,9 +11,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/innermond/sky/config"
 	myhttp "github.com/innermond/sky/http"
-	"github.com/innermond/sky/jwt"
 	"github.com/innermond/sky/mysql"
 )
 
@@ -39,18 +36,11 @@ func minor() *httptest.Server {
 	if err = db.Ping(); err != nil {
 		panic(err)
 	}
-	// authenticator
-	verify, err := config.PublicKey()
-	if err != nil {
-		panic(err)
-	}
-	a := jwt.NewAuthenticator(verify)
 	// session
 	s := mysql.NewSession(db)
 	// services
 	personService := mysql.NewPersonService(s)
 	all := &myhttp.AllServicesHandler{
-		Auth:          a,
 		PersonHandler: myhttp.NewPersonHandler(personService),
 	}
 	srv := httptest.NewServer(all)
@@ -184,8 +174,7 @@ func TestPerson_checkToken(t *testing.T) {
 
 			req, err := http.NewRequest("GET", urlStr+uc.id, nil)
 			fatalif(err, t)
-			tk := "fake.token.baby"
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %w", tk))
+			req.Header.Set("Authorization", "Bearer fake-token")
 			res, err := http.DefaultClient.Do(req)
 			fatalif(err, t)
 			if res.StatusCode != uc.expected {
