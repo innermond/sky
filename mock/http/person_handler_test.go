@@ -155,3 +155,35 @@ func TestPatchSinglePerson(t *testing.T) {
 		})
 	}
 }
+
+func TestPerson_checkToken(t *testing.T) {
+	uses := []struct {
+		id       string
+		expected int
+	}{
+		// forbidden http code
+		{"1", 403},
+		{"99", 403},
+		{"100", 403},
+	}
+	srv := minor()
+	defer srv.Close()
+	urlStr := srv.URL + "/api/persons/"
+	for _, uc := range uses {
+		t.Run(uc.id, func(t *testing.T) {
+			res, err := http.Get(urlStr + uc.id)
+			fatalif(err, t)
+			if res.StatusCode != uc.expected {
+				t.Errorf("status code expected %d got %d", uc.expected, res.StatusCode)
+			}
+		})
+		t.Run("authenticate", func(t *testing.T) {
+			res, err := http.Get(srv.URL + "/authenticate")
+			fatalif(err, t)
+			if res.StatusCode == 403 {
+				t.Errorf("status code unexpected %d", res.StatusCode)
+			}
+
+		})
+	}
+}

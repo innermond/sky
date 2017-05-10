@@ -15,3 +15,7 @@ type PersonService interface {
 
 type Session interface {
 }
+
+type Authenticator interface {
+	Authenticate() error
+}

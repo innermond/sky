@@ -13,6 +13,10 @@ func NotFound(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("{}"))
 }
+func NotAuthenticated(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusForbidden)
+	w.Write([]byte("{}"))
+}
 
 func Error(w http.ResponseWriter, err error, code int) {
 	log.Printf("http error %s (code=%d)", err, code)
