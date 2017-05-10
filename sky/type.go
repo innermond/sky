@@ -17,5 +17,5 @@ type Session interface {
 }
 
 type Authenticator interface {
-	Authenticate() error
+	Authenticate(string) error
 }
