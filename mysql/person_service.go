@@ -52,7 +52,6 @@ func (s *PersonService) Create(p sky.Person) (sky.PersonID, error) {
 	if err != nil {
 		return 0, err
 	}
-	log.Println(p)
 	res, err := stm.Exec(p.Longname)
 	if err != nil {
 		if driverErr, ok := err.(*mysql.MySQLError); ok {
@@ -108,7 +107,6 @@ func (s *PersonService) Delete(pid sky.PersonID) error {
 	if err != nil {
 		return err
 	}
-	log.Println(aff)
 	if aff == 0 {
 		return sky.ErrNoneAffected
 	}
