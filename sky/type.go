@@ -14,12 +14,13 @@ type PersonService interface {
 }
 
 type TokenService interface {
-	Create(Credentials) (string, error)
+	Create(ApiKey) (string, error)
 }
+
+type ApiKey string
 type Credentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	ApiKey   string `json:"apikey"`
 }
 
 type Session interface {

@@ -19,8 +19,8 @@ func (h TokenHandler) handlePostToken(w http.ResponseWriter, r *http.Request, _ 
 		Error(w, sky.ErrInvalidJson, http.StatusBadRequest)
 		return
 	}
-	c := sky.Credentials(req)
-	switch tokstr, err = h.TokenService.Create(c); err {
+	k := sky.ApiKey(req.ApiKey)
+	switch tokstr, err = h.TokenService.Create(k); err {
 	case nil:
 		encodeJson(w, &postTokenResponse{Token: tokstr})
 	default:
@@ -29,9 +29,7 @@ func (h TokenHandler) handlePostToken(w http.ResponseWriter, r *http.Request, _ 
 }
 
 type postTokenRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	ApiKey   string `json:"apikey"`
+	ApiKey string `json:"apikey"`
 }
 
 type postTokenResponse struct {

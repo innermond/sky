@@ -3,11 +3,10 @@ package mysql
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	myjwt "github.com/innermond/sky/jwt"
+	"github.com/innermond/sky/auth"
 	"github.com/innermond/sky/sky"
 )
 
@@ -17,36 +16,35 @@ var (
 
 type TokenService struct {
 	session      *Session
-	tokenCreator *myjwt.Creator
+	tokenCreator *auth.Creator
 }
 
-func NewTokenService(s *Session, c *myjwt.Creator) *TokenService {
+func NewTokenService(s *Session, c *auth.Creator) *TokenService {
 	return &TokenService{s, c}
 }
 
-func (s *TokenService) Create(c sky.Credentials) (string, error) {
+func (s *TokenService) Create(k sky.ApiKey) (string, error) {
 	var (
 		uid int
-		ok  bool
 	)
-	q := `select id, if(password=sha2(concat(?, salt), 256), 1, 0) as ok from users where username=? and salt=? limit 1;`
-	err := s.session.db.QueryRow(q, c.Password, c.Username, c.ApiKey).Scan(&uid, &ok)
-	log.Println("token service", err)
+	//q := `select id, if(password=sha2(concat(?, api_key), 256), 1, 0) as ok from users where username=? and api_key=? limit 1;`
+	q := `select id from users where api_key=? limit 1;`
+	key := string(k)
+	err := s.session.db.QueryRow(q, key).Scan(&uid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", errors.New("cannot create token")
+			return "", errors.New("userless apikey")
 		}
 		return "", err
 	}
-	claims := &myjwt.AuthClaims{
+	claims := &auth.AuthClaims{
 		&jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
 		},
-		myjwt.UserInfo{uid},
+		auth.UserInfo{uid},
 	}
 
 	tokstr, err := s.tokenCreator.CreateAuthToken(claims)
-	log.Println("token service", uid, ok, tokstr)
 	if err != nil {
 		return "", err
 	}

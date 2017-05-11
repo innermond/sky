@@ -1,7 +1,8 @@
-package jwt
+package auth
 
 import (
 	"crypto/rsa"
+	"fmt"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -61,19 +62,20 @@ func GetClaims(tokstr string, verifyKey *rsa.PublicKey) (*AuthClaims, error) {
 	return decoded, nil
 }
 
-func TestAuthenticator_new(t *testing.T) {
+func TestAuthenticator_createAuthToken_getClaims(t *testing.T) {
 	verify, err := PublicKey(pubpath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	a := NewAuthenticator(verify)
-	t.Logf("%v", a)
-
 	sign, err := PrivateKey(privpath)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	a := NewAuthenticator(verify)
+	tk := NewTokenCreator(sign)
+	t.Logf("%v %v", a, tk)
 
 	uses := []int{1, 2, 3, 4, 5}
 	for _, i := range uses {
@@ -84,17 +86,45 @@ func TestAuthenticator_new(t *testing.T) {
 				},
 				UserInfo{i},
 			}
-			s, err := CreateAuthToken(claims, sign)
+			s, err := tk.CreateAuthToken(claims)
 			if err != nil {
 				t.Fatal(err)
 			}
 			t.Log(s)
-
 			decoded, err := a.GetClaims(s)
 			if err != nil {
 				t.Fatal(err)
 			}
+			if decoded.UserInfo.Id != i {
+				t.Errorf("expected %d got %d", i, decoded.UserInfo.Id)
+			}
 			t.Log(decoded)
+		})
+	}
+}
+func TestAuthenticator_authenticateTokenValidationError(t *testing.T) {
+	verify, err := PublicKey(pubpath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	a := NewAuthenticator(verify)
+	t.Logf("%v", a)
+
+	uses := []string{
+		// expired
+		"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ0ODE5NzcsIklkIjo0fQ.wnQCbTG0H5hEQ7cv5U-z-3g8Hgdu59x-CtSASmNXTrs5X6l4heqlIgLTXXke3djh0-HPhCM6ZvZR-tUBwgtmlor6H8txID8md6Yofo_nzeO_eGPYcXc2huVTN1Dpi7FIdji9t3kk_F_KNIJon8taMHKOY62MvtQwDhYG_3lPkNQ",
+		// invalid
+		"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ0ODE5NzcsIklkIjo0fQ.wnQCbTG0H5hEQ7cv5U-z-3g8Hgdu59x-CtSASmNXTrs5X6l4heqlIgLTXXke3djh0-HPhCM6ZvZR-tUBwgtmlor6H8txID8md6Yofo_nzeO_eGPYcXc2huVTN1Dpi7FIdji9t3kk_F_KNIJon8taMHKOY62MvtQwDhYG_3lP",
+		"aaa",
+	}
+	for i, s := range uses {
+		t.Run(string(i), func(t *testing.T) {
+			err := a.Authenticate(s)
+			if _, ok := err.(*jwt.ValidationError); !ok || err == nil {
+				t.Fatal(s)
+			}
+			t.Log(fmt.Sprintf("%T %v", err, err))
 		})
 	}
 }

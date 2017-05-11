@@ -1,7 +1,8 @@
-package jwt
+package auth
 
 import (
 	"crypto/rsa"
+	"errors"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
@@ -9,6 +10,8 @@ import (
 type UserInfo struct {
 	Id int
 }
+
+var ErrDecodingClaims = errors.New("error decoding claims")
 
 type AuthClaims struct {
 	*jwt.StandardClaims
@@ -44,13 +47,13 @@ func (a *Authenticator) Authenticate(tokstr string) error {
 }
 
 func (a *Authenticator) GetClaims(tokstr string) (*AuthClaims, error) {
-	var err error
-	if a.token == nil {
-		err = a.Authenticate(tokstr)
-		if err != nil {
-			return nil, err
-		}
+	err := a.Authenticate(tokstr)
+	if err != nil {
+		return nil, err
 	}
-	decoded := a.token.Claims.(*AuthClaims)
+	decoded, ok := a.token.Claims.(*AuthClaims)
+	if !ok {
+		return decoded, ErrDecodingClaims
+	}
 	return decoded, nil
 }

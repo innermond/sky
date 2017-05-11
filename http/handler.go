@@ -10,7 +10,7 @@ import (
 )
 
 type AllServicesHandler struct {
-	Auth          sky.Authenticator
+	AllRoutesAuth sky.Authenticator
 	PersonHandler *PersonHandler
 	TokenHandler  *TokenHandler
 }
@@ -29,7 +29,6 @@ func (h *AllServicesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// check presence auth token for entire api's endpoints excepts "authenticate"
 	tokenName := "Authorization"
 	tokenstr := r.Header.Get(tokenName)
-	log.Println(parts, resource, tokenstr)
 	if resource != "tokens" {
 		if "" == tokenstr {
 			NotAuthenticated(w)
@@ -42,7 +41,7 @@ func (h *AllServicesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		tk := tokenstr[7:]
-		err := h.Auth.Authenticate(tk)
+		err := h.AllRoutesAuth.Authenticate(tk)
 		log.Println(err)
 		if err != nil {
 			NotAuthenticated(w)
