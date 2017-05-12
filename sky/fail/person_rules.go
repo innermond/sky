@@ -3,7 +3,6 @@ package fail
 import (
 	"regexp"
 	"strings"
-	"unicode"
 
 	"github.com/innermond/sky/sky"
 )
@@ -19,16 +18,11 @@ func NewPersonRules(p sky.Person) *PersonRules {
 
 func (r *PersonRules) LongnameOk() *Mistake {
 	//TODO Move sanitising outside
-	v := strings.TrimSpace(r.Longname)
+	v := strings.TrimSpace(r.Person.Longname)
 	// only printables
-	printable := true
-	for _, ch := range v {
-		printable = unicode.IsPrint(ch)
-		if !printable {
-			return NewMistake("unprintable characters")
-		}
+	if merr := IsPrintable(v); merr != nil {
+		return merr
 	}
-
 	// required
 	if v == "" {
 		return NewMistake("required")
@@ -56,11 +50,15 @@ func (r *PersonRules) Fail() bool {
 	merr = r.LongnameOk()
 	// check fields are ok
 	if merr != nil {
-		r.mistakes["longname"] = append(r.mistakes["longname"], merr)
+		r.addMistake("longname", merr)
 		failed = true
 	}
 
 	return failed
+}
+
+func (r *PersonRules) addMistake(key string, merr *Mistake) {
+	r.mistakes[key] = append(r.mistakes[key], merr)
 }
 
 func (r *PersonRules) Err() Mistakes {
