@@ -8,7 +8,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-const root string = "/home/userescu/Projects/gollum/src/github.com/innermond/sky/"
+const root string = "/home/gabriel/Projects/gollum/src/github.com/innermond/sky/"
 
 var (
 	pkgErr error

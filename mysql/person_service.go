@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/innermond/sky/fail"
 	"github.com/innermond/sky/sky"
-	"github.com/innermond/sky/sky/fail"
 )
 
 var (
@@ -47,6 +47,10 @@ func (s *PersonService) Get(pid sky.PersonID) (*sky.Person, error) {
 }
 
 func (s *PersonService) Create(p sky.Person) (sky.PersonID, error) {
+	r := fail.NewPersonRules(p)
+	if ko := r.Fail(); ko {
+		return 0, r.Err()
+	}
 	q := `insert into persons (longname) values (?)`
 	stm, err := s.session.db.Prepare(q)
 	if err != nil {

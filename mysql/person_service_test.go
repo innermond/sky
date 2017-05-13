@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/innermond/sky/config"
@@ -72,7 +71,7 @@ func TestPersonService_create_delete(t *testing.T) {
 	}
 }
 
-func TestPersonService_delete(t *testing.T) {
+/*func TestPersonService_delete(t *testing.T) {
 	db := config.DB()
 	if err := config.Err(); err != nil {
 		t.Fatal(err)
@@ -96,4 +95,4 @@ func TestPersonService_delete(t *testing.T) {
 			}
 		})
 	}
-}
+}*/

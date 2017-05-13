@@ -28,7 +28,7 @@ func (r *PersonRules) LongnameOk() *Mistake {
 		return NewMistake("required")
 	}
 	// size
-	l := len(v)
+	l := len([]rune(v))
 	if l < 4 || l > 10 {
 		return NewMistake("unexpected length")
 	}

@@ -22,7 +22,8 @@ func main() {
 	db := config.DB()
 	verify := config.PublicKey()
 	sign := config.PrivateKey()
-	if err := config.Err(); err != nil {
+	err := config.Err()
+	if err != nil {
 		panic(err)
 	}
 

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/innermond/sky/fail"
 	"github.com/innermond/sky/sky"
-	"github.com/innermond/sky/sky/fail"
 	"github.com/julienschmidt/httprouter"
 )
 

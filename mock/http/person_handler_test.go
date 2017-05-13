@@ -2,7 +2,6 @@ package http
 
 import (
 	"bytes"
-	"database/sql"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -12,9 +11,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/innermond/sky/auth"
 	"github.com/innermond/sky/config"
 	myhttp "github.com/innermond/sky/http"
-	"github.com/innermond/sky/jwt"
 	"github.com/innermond/sky/mysql"
 )
 
@@ -31,26 +30,18 @@ func init() {
 
 // act like main() basically it is an adjusted copy paste of main.main()
 func minor() *httptest.Server {
-	dns := "root:M0b1d1c3@tcp(localhost:3306)/printoo"
-	db, err := sql.Open("mysql", dns)
-	if err != nil {
+	db := config.DB()
+	verify := config.PublicKey()
+	if err := config.Err(); err != nil {
 		panic(err)
 	}
-	if err = db.Ping(); err != nil {
-		panic(err)
-	}
-	// authenticator
-	verify, err := config.PublicKey()
-	if err != nil {
-		panic(err)
-	}
-	a := jwt.NewAuthenticator(verify)
+	a := auth.NewAuthenticator(verify)
 	// session
 	s := mysql.NewSession(db)
 	// services
 	personService := mysql.NewPersonService(s)
 	all := &myhttp.AllServicesHandler{
-		Auth:          a,
+		AllRoutesAuth: a,
 		PersonHandler: myhttp.NewPersonHandler(personService),
 	}
 	srv := httptest.NewServer(all)
@@ -103,7 +94,8 @@ func TestPostSinglePerson(t *testing.T) {
 	urlStr := srv.URL + "/api/persons"
 	for _, uc := range uses {
 		t.Run(uc.data, func(t *testing.T) {
-			req, err := http.NewRequest("PATCH", urlStr, bytes.NewBuffer([]byte(uc.data)))
+			req, err := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(uc.data)))
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ2NzUxNDEsIklkIjoxfQ.1k7QTZlpBAIQ6NqQlH3J7vz6CeuTPiV-E3crW1rExyrvtpW8alELvE1gSNAACaHY22y0_2GJVJmydEJI3zP8LOpvHj7aH_utQw2hGajzDtdK2BnlNwoKAmEUEzi70-eHd2AzDsvj49AVBHQbN_vh8Hd49Q5grM35iYHXRIh82VY"))
 			fatalif(err, t)
 			res, err := http.DefaultClient.Do(req)
 			fatalif(err, t)

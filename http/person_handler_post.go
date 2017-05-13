@@ -36,6 +36,14 @@ type postPersonRequest struct {
 	Person sky.Person `json:"person,omitempty"`
 }
 
+/*func (pq *postPersonRequest) UnmarshalJSON(data []byte) error {
+	err := json.Unmarshal(data, pq)
+	if err == nil {
+		pq.Person.Longname = "am modified"
+	}
+	return err
+}*/
+
 type postPersonResponse struct {
 	Lid sky.PersonID `json:"lid,omitempty"`
 	errorResponse
