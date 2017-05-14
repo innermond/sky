@@ -40,10 +40,10 @@ func TestPersonRulesFailure(t *testing.T) {
 		t.Run(uc.data.Longname, func(t *testing.T) {
 			r := &PersonRules{uc.data, nil}
 			if r.Fail() != uc.expected {
-				t.Error(uc.ta.Longname)
+				t.Error(uc.data.Longname)
 			} else {
 				merr := r.Err()
-
+				t.Log(merr)
 			}
 		})
 	}

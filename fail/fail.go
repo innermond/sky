@@ -1,6 +1,9 @@
 package fail
 
-import "unicode"
+import (
+	"encoding/json"
+	"unicode"
+)
 
 type Mistake struct {
 	s string
@@ -10,6 +13,16 @@ type Mistakes map[string][]*Mistake
 
 func (ms Mistakes) Error() string {
 	return "validation errors"
+}
+
+func (ms Mistakes) MarshalJSON() ([]byte, error) {
+	out := make(map[string][]interface{})
+	for k, mm := range ms {
+		for _, m := range mm {
+			out[k] = append(out[k], m.Error())
+		}
+	}
+	return json.Marshal(out)
 }
 
 func (e Mistake) Error() string {

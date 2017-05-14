@@ -36,7 +36,6 @@ func init() {
 // act like main() basically it is an adjusted copy paste of main.main()
 func minor() *httptest.Server {
 	db := config.DB()
-	//verify := config.PublicKey()
 	if err := config.Err(); err != nil {
 		panic(err)
 	}

@@ -22,16 +22,13 @@ func (h PersonHandler) handlePostPerson(w http.ResponseWriter, r *http.Request, 
 	}
 
 	p := req.Person
-	//TODO a logical meaningfull error system and error reporting
-	switch lid, err = h.PersonService.Create(p); err {
-	case nil:
+	lid, err = h.PersonService.Create(p)
+	// ok
+	if err == nil {
 		encodeJson(w, &postPersonResponse{Lid: lid})
 		return
-	case sky.ErrPersonValid:
-		Error(w, sky.ErrPersonValid, http.StatusPreconditionFailed)
-		return
 	}
-
+	// errors
 	switch err.(type) {
 	case fail.Mistakes:
 		Error(w, err.(fail.Mistakes), http.StatusPreconditionFailed)

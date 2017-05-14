@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/innermond/sky/fail"
 	"github.com/innermond/sky/sky"
 )
 
@@ -20,15 +21,22 @@ func NotAuthenticated(w http.ResponseWriter) {
 
 func Error(w http.ResponseWriter, err error, code int) {
 	log.Printf("http error %s (code=%d)", err, code)
-	if code == http.StatusInternalServerError {
+Code:
+	switch code {
+	case http.StatusInternalServerError:
 		err = sky.ErrInternal
+	case http.StatusPreconditionFailed:
+		if merrs, ok := err.(fail.Mistakes); ok {
+			err = merrs
+			break Code
+		}
 	}
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(&errorResponse{Err: err.Error()})
+	json.NewEncoder(w).Encode(&errorResponse{Err: err})
 }
 
 type errorResponse struct {
-	Err string `json:"err,omitempty"`
+	Err interface{} `json:"err,omitempty"`
 }
 
 func encodeJson(w http.ResponseWriter, v interface{}) {
