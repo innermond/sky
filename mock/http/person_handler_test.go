@@ -11,14 +11,19 @@ import (
 	"os"
 	"testing"
 
-	"github.com/innermond/sky/auth"
 	"github.com/innermond/sky/config"
 	myhttp "github.com/innermond/sky/http"
+	"github.com/innermond/sky/mock"
 	"github.com/innermond/sky/mysql"
 )
 
+var (
+	noLog     *bool
+	fakeToken = "Bearer <fakeToken>"
+)
+
 func init() {
-	noLog := flag.Bool("nolog", true, "disable log output")
+	noLog = flag.Bool("nolog", true, "disable log output")
 	flag.Parse()
 	if !*noLog {
 		log.SetOutput(os.Stderr)
@@ -31,11 +36,11 @@ func init() {
 // act like main() basically it is an adjusted copy paste of main.main()
 func minor() *httptest.Server {
 	db := config.DB()
-	verify := config.PublicKey()
+	//verify := config.PublicKey()
 	if err := config.Err(); err != nil {
 		panic(err)
 	}
-	a := auth.NewAuthenticator(verify)
+	a := mock.NewHappyAuthenticator()
 	// session
 	s := mysql.NewSession(db)
 	// services
@@ -70,7 +75,9 @@ func TestGetSinglePerson(t *testing.T) {
 	urlStr := srv.URL + "/api/persons/"
 	for _, uc := range uses {
 		t.Run(uc.id, func(t *testing.T) {
-			res, err := http.Get(urlStr + uc.id)
+			req, err := http.NewRequest("GET", urlStr, nil)
+			req.Header.Add("Authorization", fakeToken)
+			res, err := http.DefaultClient.Do(req)
 			fatalif(err, t)
 			if res.StatusCode != uc.expected {
 				t.Errorf("status code expected %d got %d", uc.expected, res.StatusCode)
@@ -95,10 +102,14 @@ func TestPostSinglePerson(t *testing.T) {
 	for _, uc := range uses {
 		t.Run(uc.data, func(t *testing.T) {
 			req, err := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(uc.data)))
-			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE0OTQ2NzUxNDEsIklkIjoxfQ.1k7QTZlpBAIQ6NqQlH3J7vz6CeuTPiV-E3crW1rExyrvtpW8alELvE1gSNAACaHY22y0_2GJVJmydEJI3zP8LOpvHj7aH_utQw2hGajzDtdK2BnlNwoKAmEUEzi70-eHd2AzDsvj49AVBHQbN_vh8Hd49Q5grM35iYHXRIh82VY"))
+			req.Header.Add("Authorization", fakeToken)
 			fatalif(err, t)
 			res, err := http.DefaultClient.Do(req)
 			fatalif(err, t)
+			bb, err := ioutil.ReadAll(res.Body)
+			fatalif(err, t)
+			t.Log(string(bb))
+			res.Body.Close()
 			if res.StatusCode != uc.expected {
 				t.Errorf("status code expected %d got %d", uc.expected, res.StatusCode)
 			}

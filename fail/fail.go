@@ -8,6 +8,10 @@ type Mistake struct {
 
 type Mistakes map[string][]*Mistake
 
+func (ms Mistakes) Error() string {
+	return "validation errors"
+}
+
 func (e Mistake) Error() string {
 	return e.s
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/innermond/sky/fail"
 	"github.com/innermond/sky/sky"
 	"github.com/julienschmidt/httprouter"
 )
@@ -21,15 +22,23 @@ func (h PersonHandler) handlePostPerson(w http.ResponseWriter, r *http.Request, 
 	}
 
 	p := req.Person
-
+	//TODO a logical meaningfull error system and error reporting
 	switch lid, err = h.PersonService.Create(p); err {
 	case nil:
 		encodeJson(w, &postPersonResponse{Lid: lid})
+		return
 	case sky.ErrPersonValid:
-		Error(w, sky.ErrPersonValid, http.StatusBadRequest)
-	default:
-		Error(w, err, http.StatusInternalServerError)
+		Error(w, sky.ErrPersonValid, http.StatusPreconditionFailed)
+		return
 	}
+
+	switch err.(type) {
+	case fail.Mistakes:
+		Error(w, err.(fail.Mistakes), http.StatusPreconditionFailed)
+		return
+	}
+
+	Error(w, err, http.StatusInternalServerError)
 }
 
 type postPersonRequest struct {
