@@ -94,6 +94,7 @@ func TestPostSinglePerson(t *testing.T) {
 		{`{"person":{"id":1,"longname":"ga"}}`, 412},
 		{`{"person":{"id":1,"longname":"ga is more than 10 characters length"}}`, 412},
 		{`{"person":{"id":1,"longname":"I try to\nmake it fun"}}`, 412},
+		{`{"person":{"id":wronged json here...`, 400},
 	}
 	srv := minor()
 	defer srv.Close()

@@ -7,6 +7,7 @@ import (
 	"github.com/innermond/sky/fail"
 	"github.com/innermond/sky/sky"
 	"github.com/julienschmidt/httprouter"
+	"github.com/pkg/errors"
 )
 
 func (h PersonHandler) handlePostPerson(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -17,7 +18,8 @@ func (h PersonHandler) handlePostPerson(w http.ResponseWriter, r *http.Request, 
 	)
 
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
-		Error(w, sky.ErrInvalidJson, http.StatusBadRequest)
+		err = errors.Wrap(err, "json decode")
+		Error(w, err, http.StatusBadRequest)
 		return
 	}
 

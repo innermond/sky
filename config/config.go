@@ -4,16 +4,23 @@ import (
 	"crypto/rsa"
 	"database/sql"
 	"io/ioutil"
+	"os"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-const root string = "/home/userescu/Projects/gollum/src/github.com/innermond/sky/"
+func init() {
+	hm, err := os.Hostname()
+	if err != nil {
+		panic(err)
+	}
+	root = "/home/" + hm + "/Projects/gollum/src/github.com/innermond/sky/"
+}
 
 var (
 	pkgErr error
-
-	dns = "root:M0b1d1c3@tcp(localhost:3306)/printoo"
+	root   string
+	dns    = "root:M0b1d1c3@tcp(localhost:3306)/printoo"
 
 	pubpath  string = root + "var/app.rsa.pub"
 	privpath string = root + "var/app.rsa"
