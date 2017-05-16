@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/innermond/sky/fail"
 	"github.com/innermond/sky/sky"
@@ -44,13 +45,17 @@ type postPersonRequest struct {
 	Person sky.Person `json:"person,omitempty"`
 }
 
-/*func (pq *postPersonRequest) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, pq)
+type postPerson postPersonRequest
+
+func (pq *postPersonRequest) UnmarshalJSON(data []byte) error {
+	var preq = postPerson{}
+	err := json.Unmarshal(data, &preq)
 	if err == nil {
-		pq.Person.Longname = "am modified"
+		preq.Person.Longname = strings.TrimSpace(preq.Person.Longname)
+		*pq = postPersonRequest(preq)
 	}
 	return err
-}*/
+}
 
 type postPersonResponse struct {
 	Lid sky.PersonID `json:"lid,omitempty"`

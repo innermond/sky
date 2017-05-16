@@ -4,6 +4,7 @@ type PersonID int
 type Person struct {
 	ID       PersonID `json:"id,omitempty"`
 	Longname string   `json:"longname"`
+	//Phone    *string  `json:"phone"`
 }
 
 type PersonService interface {

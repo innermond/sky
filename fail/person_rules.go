@@ -2,7 +2,6 @@ package fail
 
 import (
 	"regexp"
-	"strings"
 
 	"github.com/innermond/sky/sky"
 )
@@ -17,8 +16,7 @@ func NewPersonRules(p sky.Person) *PersonRules {
 }
 
 func (r *PersonRules) LongnameOk() *Mistake {
-	//TODO Move sanitising outside
-	v := strings.TrimSpace(r.Person.Longname)
+	v := r.Person.Longname
 	// only printables
 	if merr := IsPrintable(v); merr != nil {
 		return merr

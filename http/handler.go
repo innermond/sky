@@ -25,7 +25,8 @@ func (h *AllServicesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resource := parts[2]
-
+	// json all the way
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	// check presence auth token for entire api's endpoints excepts "authenticate"
 	tokenName := "Authorization"
 	tokenstr := r.Header.Get(tokenName)

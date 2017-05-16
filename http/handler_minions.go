@@ -32,7 +32,7 @@ func Error(w http.ResponseWriter, err error, code int) {
 	} else {
 		log.Printf("http error %s (code=%d)", err, code)
 	}
-	err = errors.Cause(err)
+	//err = errors.Cause(err)
 	switch code {
 	case http.StatusInternalServerError:
 		err = sky.ErrInternal
@@ -57,9 +57,9 @@ func encodeJson(w http.ResponseWriter, v interface{}) {
 }
 
 func trace(err error) (out string, exists bool) {
-	if err, ok := err.(stackTracer); ok {
-		exists = true
-		for _, f := range err.StackTrace() {
+	var terr stackTracer
+	if terr, exists = err.(stackTracer); exists {
+		for _, f := range terr.StackTrace() {
 			out += "\n" + fmt.Sprintf("%+s:%d", f)
 		}
 	}
