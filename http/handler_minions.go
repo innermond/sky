@@ -32,16 +32,14 @@ func Error(w http.ResponseWriter, err error, code int) {
 	} else {
 		log.Printf("http error %s (code=%d)", err, code)
 	}
-	//err = errors.Cause(err)
-	switch code {
-	case http.StatusInternalServerError:
+	err = errors.Cause(err)
+	switch err.(type) {
+	case fail.Mistakes:
+		err = err.(fail.Mistakes)
+	default:
 		err = sky.ErrInternal
-	case http.StatusPreconditionFailed:
-		if merrs, ok := err.(fail.Mistakes); ok {
-			err = merrs
-			break
-		}
 	}
+	// write response
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(&errorResponse{Err: err})
 }

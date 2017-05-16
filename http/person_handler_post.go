@@ -45,10 +45,10 @@ type postPersonRequest struct {
 	Person sky.Person `json:"person,omitempty"`
 }
 
-type postPerson postPersonRequest
+type postPersonAlias postPersonRequest
 
 func (pq *postPersonRequest) UnmarshalJSON(data []byte) error {
-	var preq = postPerson{}
+	var preq = postPersonAlias{}
 	err := json.Unmarshal(data, &preq)
 	if err == nil {
 		preq.Person.Longname = strings.TrimSpace(preq.Person.Longname)

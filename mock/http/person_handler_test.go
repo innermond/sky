@@ -3,7 +3,6 @@ package http
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -95,7 +94,7 @@ func TestPostSinglePerson(t *testing.T) {
 		{`{"person":{"id":1,"longname":"  ga  "}}`, 412},
 		{`{"person":{"id":1,"longname":"ga is more than 10 characters length"}}`, 412},
 		{`{"person":{"id":1,"longname":"I try to\nmake it fun"}}`, 412},
-		{`{"person":{"id":wronged json here...`, 400},
+		{`{"person":{"id":wrong json here...`, 400},
 	}
 	srv := minor()
 	defer srv.Close()
@@ -119,6 +118,7 @@ func TestPostSinglePerson(t *testing.T) {
 }
 
 func TestDeleteSinglePerson(t *testing.T) {
+	t.Skip("not ready yet...")
 	uses := []struct {
 		id       string
 		expected int
@@ -134,6 +134,7 @@ func TestDeleteSinglePerson(t *testing.T) {
 	for _, uc := range uses {
 		t.Run(uc.id, func(t *testing.T) {
 			req, err := http.NewRequest("DELETE", urlStr+uc.id, nil)
+			req.Header.Add("Authorization", fakeToken)
 			fatalif(err, t)
 			res, err := http.DefaultClient.Do(req)
 			fatalif(err, t)
@@ -150,16 +151,17 @@ func TestPatchSinglePerson(t *testing.T) {
 		expected int
 	}{
 		// longname is not valid
-		{`{"person":{"id":1,"longname":"ga"}}`, 412},
-		{`{"person":{"id":1,"longname":"ga is more than 10 characters length"}}`, 412},
-		{`{"person":{"id":1,"longname":"I try to\nmake it fun"}}`, 412},
+		{`{"person":{"longname":"ga"}}`, 412},
+		{`{"person":{"longname":"ga is more than 10 characters length"}}`, 412},
+		{`{"person":{"longname":"I try to\nmake it fun"}}`, 412},
 	}
 	srv := minor()
 	defer srv.Close()
-	urlStr := srv.URL + "/api/persons"
+	urlStr := srv.URL + "/api/persons/1"
 	for _, uc := range uses {
 		t.Run(uc.data, func(t *testing.T) {
 			req, err := http.NewRequest("PATCH", urlStr, bytes.NewBuffer([]byte(uc.data)))
+			req.Header.Add("Authorization", fakeToken)
 			fatalif(err, t)
 			res, err := http.DefaultClient.Do(req)
 			fatalif(err, t)
@@ -176,20 +178,18 @@ func TestPerson_checkToken(t *testing.T) {
 		expected int
 	}{
 		// forbidden http code
-		{"1", 403},
-		{"99", 403},
-		{"100", 403},
+		{"1", 200},   // exists
+		{"99", 404},  // do not exists
+		{"100", 404}, // do not exists
 	}
 	srv := minor()
 	defer srv.Close()
 	urlStr := srv.URL + "/api/persons/"
 	for _, uc := range uses {
 		t.Run(uc.id, func(t *testing.T) {
-
 			req, err := http.NewRequest("GET", urlStr+uc.id, nil)
 			fatalif(err, t)
-			tk := "fake.token.baby"
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %w", tk))
+			req.Header.Add("Authorization", fakeToken)
 			res, err := http.DefaultClient.Do(req)
 			fatalif(err, t)
 			if res.StatusCode != uc.expected {
@@ -200,7 +200,7 @@ func TestPerson_checkToken(t *testing.T) {
 			res, err := http.Get(srv.URL + "/authenticate")
 			fatalif(err, t)
 			if res.StatusCode == 403 {
-				t.Errorf("status code unexpected %d", res.StatusCode)
+				t.Errorf("status code expected different from %d", res.StatusCode)
 			}
 
 		})

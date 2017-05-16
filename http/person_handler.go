@@ -19,8 +19,8 @@ func NewPersonHandler(s sky.PersonService) *PersonHandler {
 
 	h.GET("/api/persons/:id", h.handleGetPerson)
 	h.DELETE("/api/persons/:id", h.handleDeletePerson)
-	h.POST("/api/persons", h.handlePostPerson)
 	h.PATCH("/api/persons/:id", h.handlePatchPerson)
+	h.POST("/api/persons", h.handlePostPerson)
 
 	return h
 }

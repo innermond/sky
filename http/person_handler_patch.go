@@ -3,17 +3,21 @@ package http
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/innermond/sky/fail"
 	"github.com/innermond/sky/sky"
 	"github.com/julienschmidt/httprouter"
 )
 
-func (h PersonHandler) handlePatchPerson(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (h PersonHandler) handlePatchPerson(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var (
 		req patchPersonRequest
 		err error
 	)
+
+	_pid, err := strconv.Atoi(ps.ByName("id"))
+	pid := sky.PersonID(_pid)
 
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		Error(w, sky.ErrInvalidJson, http.StatusBadRequest)
@@ -21,7 +25,7 @@ func (h PersonHandler) handlePatchPerson(w http.ResponseWriter, r *http.Request,
 	}
 
 	p := req.Person
-
+	p.ID = pid
 	err = h.PersonService.Modify(p)
 	// Validation
 	if err == nil {
